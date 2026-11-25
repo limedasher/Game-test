@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d0b0e">
+  <title>Archive Arcade</title>
+  <style>
+    :root {
+      --bg-color: #0d0b0e;
+      --surface-color: #141017;
+      --card-bg: #18141c;
+      --card-hover: #211b26;
+      --accent: #e4007c;
+      --accent-hover: #ff1a94;
+      --accent-glow: rgba(228, 0, 124, 0.35);
+      --accent-soft: rgba(228, 0, 124, 0.14);
+      --border-subtle: #2b2233;
+      --text-main: #f8f5f9;
+      --text-muted: #a395ab;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header & Actions */
+    header {
+      padding: 1.35rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.25rem;
+      background: linear-gradient(180deg, var(--surface-color) 0%, var(--bg-color) 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+
+    .brand-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-size: 1.65rem;
+      letter-spacing: 1.5px;
+      font-weight: 800;
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      flex: 1;
+      justify-content: flex-end;
+      min-width: 260px;
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 0.9rem;
+    }
+
+    #search-input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 0.68rem 2.3rem 0.68rem 2.4rem;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    #search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .clear-search {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      display: none;
+      padding: 0.2rem;
+    }
+
+    .clear-search:hover {
+      color: var(--text-main);
+    }
+
+    .local-rom-btn {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 0.68rem 1.2rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: background-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .local-rom-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Main Layout */
+    .container {
+      padding: 2rem 3rem 3.5rem;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Filter Bars */
+    .filters-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 68px;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .filter-pill {
+      background: var(--card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      padding: 0.48rem 1rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .filter-pill:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .filter-pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .filter-pill.genre-pill.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #ff85c8;
+      box-shadow: none;
+    }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-header h2 {
+      font-size: 1.05rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .section-line {
+      height: 1px;
+      flex: 1;
+      background: var(--border-subtle);
+    }
+
+    .result-count {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Game Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+      gap: 1.75rem;
+    }
+
+    .game-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background-color 0.22s ease;
+      border: 2px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .game-card:hover {
+      transform: translateY(-6px);
+      background: var(--card-hover);
+      border-color: var(--accent);
+      box-shadow: 0 12px 28px var(--accent-glow);
+    }
+
+    .cover-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #120e16;
+      overflow: hidden;
+    }
+
+    .game-cover {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .game-card:hover .game-cover {
+      transform: scale(1.04);
+    }
+
+    .fav-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(13, 11, 14, 0.78);
+      backdrop-filter: blur(4px);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      color: #d1c7d8;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      transition: transform 0.16s ease, border-color 0.16s ease, color 0.16s ease, background-color 0.16s ease;
+    }
+
+    .fav-btn:hover {
+      transform: scale(1.1);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .fav-btn.is-fav {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+
+    .play-badge {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .game-card:hover .play-badge {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .game-info {
+      padding: 1rem 1.1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .meta-tags {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .game-console {
+      font-size: 0.72rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .game-genre {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.18rem 0.55rem;
+      border-radius: 6px;
+      font-weight: 600;
+      max-width: 115px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .game-title {
+      font-weight: 600;
+      font-size: 1.02rem;
+      color: var(--text-main);
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Pagination & Loaders */
+    .load-more-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 2.5rem;
+    }
+
+    .load-more-btn {
+      background: var(--card-bg);
+      color: var(--text-main);
+      border: 2px solid var(--accent);
+      padding: 0.8rem 2.2rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px var(--accent-soft);
+    }
+
+    .load-more-btn:hover {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 6px 22px var(--accent-glow);
+    }
+
+    .load-more-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid var(--border-subtle);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 2rem auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 4rem 1.5rem;
+      background: var(--card-bg);
+      border: 1px dashed var(--border-subtle);
+      border-radius: 16px;
+    }
+
+    .empty-state h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      font-size: 0.95rem;
+    }
+
+    .reset-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.3rem;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Modal for Local ROM Core Selection */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 6, 8, 0.85);
+      backdrop-filter: blur(6px);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 460px;
+      padding: 1.75rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px var(--accent-glow);
+    }
+
+    .modal-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-file-name {
+      color: #ff85c8;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      word-break: break-all;
+      background: var(--accent-soft);
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+    }
+
+    .modal-label {
+      display: block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 0.45rem;
+    }
+
+    .core-select {
+      width: 100%;
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1.5px solid var(--border-subtle);
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      margin-bottom: 1.15rem;
+      outline: none;
+    }
+
+    .core-select:focus {
+      border-color: var(--accent);
+    }
+
+    .bios-box {
+      background: var(--bg-color);
+      border: 1px dashed var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .bios-info {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bios-btn {
+      background: var(--card-hover);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .bios-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    .modal-cancel {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      padding: 0.65rem 1.15rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .modal-launch {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 0.65rem 1.35rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Fullscreen Emulator Overlay */
+    #player-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #070608;
+      z-index: 1000;
+      flex-direction: column;
+    }
+
+    .player-bar {
+      background: var(--surface-color);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .now-playing-group {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-width: 0;
+    }
+
+    .live-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      flex-shrink: 0;
+    }
+
+    #now-playing {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .archive-link-btn {
+      background: var(--card-hover);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      text-decoration: none;
+      display: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .archive-link-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .close-btn {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 0.5rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.15s ease;
+    }
+
+    .close-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    #emulator-container {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .boot-status {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 2rem;
+      max-width: 480px;
+      line-height: 1.5;
+    }
+
+    .boot-status h3 {
+      color: var(--text-main);
+      margin-bottom: 0.6rem;
+    }
+
+    .boot-actions {
+      margin-top: 1.25rem;
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Mobile / Android Responsive Tweaks */
+    @media (max-width: 768px) {
+      header {
+        padding: 1.1rem 1.25rem;
+      }
+
+      .header-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .search-wrapper {
+        max-width: none;
+      }
+
+      .container {
+        padding: 1.25rem;
+      }
+
+      .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.45rem;
+      }
+
+      .pill-row {
+        width: 100%;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.35rem;
+        scrollbar-width: none;
+      }
+
+      .pill-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .filter-pill {
+        flex-shrink: 0;
+      }
+
+      .grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+      }
+
+      .play-badge {
+        opacity: 1;
+        transform: translateY(0);
+        font-size: 0.7rem;
+        padding: 0.28rem 0.65rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand" onclick="resetFilters()">
+      <div class="brand-dot"></div>
+      <h1>ARCHIVE <span>ARCADE</span></h1>
+    </div>
+
+    <div class="header-controls">
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search hundreds of games..." autocomplete="off">
+        <button class="clear-search" id="clear-search" aria-label="Clear search">✕</button>
+      </div>
+
+      <button class="local-rom-btn" onclick="document.getElementById('rom-file-input').click()">
+        <span>📂</span> Load ROM
+      </button>
+      <input type="file" id="rom-file-input" accept=".nes,.sfc,.smc,.gb,.gbc,.gba,.md,.bin,.gen,.sms,.gg,.n64,.z64,.v64,.nds,.iso,.cue,.chd,.pbp,.zip" style="display:none">
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="filters-section">
+      <div class="filter-group">
+        <span class="filter-label">Library</span>
+        <div class="pill-row">
+          <button class="filter-pill active" id="pill-all" onclick="setFavMode(false)">All Cartridges</button>
+          <button class="filter-pill" id="pill-favs" onclick="setFavMode(true)">♥ Favorites (<span id="fav-count">0</span>)</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-label">Console</span>
+        <div class="pill-row" id="console-filters"></div>
+      </div>
+
+      <div class="filter-group">
+        <span class="filter-label">Genre</span>
+        <div class="pill-row" id="genre-filters"></div>
+      </div>
+    </section>
+
+    <div class="section-header">
+      <h2 id="library-heading">All Games</h2>
+      <div class="section-line"></div>
+      <span class="result-count" id="result-count">Loading catalog...</span>
+    </div>
+
+    <div id="loading-spinner" class="spinner" style="display:none;"></div>
+    <div class="grid" id="game-grid"></div>
+
+    <div class="load-more-wrap" id="load-more-wrap" style="display:none;">
+      <button class="load-more-btn" id="load-more-btn" onclick="loadMoreGames()">Load More Cartridges</button>
+    </div>
+
+    <div class="empty-state" id="empty-state">
+      <h3 id="empty-title">No matching cartridges found</h3>
+      <p id="empty-desc">Try clearing your search or switching console and genre filters.</p>
+      <button class="reset-btn" onclick="resetFilters()">Reset Filters</button>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="local-rom-modal">
+    <div class="modal-card">
+      <h3>Boot Local ROM / Disc</h3>
+      <div class="modal-file-name" id="selected-file-name">game.nes</div>
+
+      <label class="modal-label" for="core-selector">Select Console Core</label>
+      <select class="core-select" id="core-selector">
+        <option value="nes">NES (Nintendo Entertainment System)</option>
+        <option value="snes">SNES (Super Nintendo)</option>
+        <option value="gb">Game Boy / Game Boy Color</option>
+        <option value="gba">Game Boy Advance (GBA)</option>
+        <option value="n64">Nintendo 64</option>
+        <option value="nds">Nintendo DS</option>
+        <option value="psx">PlayStation 1 (PSX)</option>
+        <option value="segaMD">Sega Genesis / Mega Drive</option>
+        <option value="segaCD">Sega CD</option>
+        <option value="sega32x">Sega 32X</option>
+        <option value="segaSaturn">Sega Saturn</option>
+        <option value="segaMS">Sega Master System</option>
+        <option value="segaGG">Sega Game Gear</option>
+        <option value="mame2003_plus">Arcade (MAME)</option>
+      </select>
+
+      <label class="modal-label">Optional System BIOS (Needed for PS1 / Saturn / Sega CD)</label>
+      <div class="bios-box">
+        <span class="bios-info" id="bios-file-label">No BIOS selected</span>
+        <button type="button" class="bios-btn" onclick="document.getElementById('bios-file-input').click()">Choose BIOS</button>
+        <input type="file" id="bios-file-input" style="display:none">
+      </div>
+
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeLocalModal()">Cancel</button>
+        <button class="modal-launch" onclick="confirmLocalRomLaunch()">▶ Launch Game</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="player-overlay">
+    <div class="player-bar">
+      <div class="now-playing-group">
+        <div class="live-indicator"></div>
+        <span id="now-playing">Loading...</span>
+      </div>
+      <div class="player-actions">
+        <a id="archive-fallback-link" class="archive-link-btn" href="#" target="_blank" rel="noopener">Open on Archive.org ↗</a>
+        <button class="close-btn" onclick="closeGame()">✕ Exit</button>
+      </div>
+    </div>
+    <div id="emulator-container"></div>
+  </div>
+
+  <script>
+    const CONSOLES = [
+      {
+        label: "All",
+        core: null,
+        query: '(collection:internetarcade OR collection:consolelivingroom OR subject:"homebrew" OR subject:"public domain rom") AND mediatype:software'
+      },
+      {
+        label: "Arcade",
+        core: "mame2003_plus",
+        query: 'collection:internetarcade AND mediatype:software'
+      },
+      {
+        label: "NES",
+        core: "nes",
+        query: '(subject:"NES" OR subject:"Nintendo Entertainment System" OR collection:consolelivingroom) AND (title:"NES" OR subject:"NES") AND mediatype:software'
+      },
+      {
+        label: "SNES",
+        core: "snes",
+        query: '(subject:"SNES" OR subject:"Super Nintendo") AND mediatype:software'
+      },
+      {
+        label: "Game Boy",
+        core: "gb",
+        query: '(subject:"Game Boy" OR subject:"GameBoy") AND mediatype:software'
+      },
+      {
+        label: "GBA",
+        core: "gba",
+        query: '(subject:"Game Boy Advance" OR subject:"GBA") AND mediatype:software'
+      },
+      {
+        label: "Genesis",
+        core: "segaMD",
+        query: '(subject:"Sega Genesis" OR subject:"Mega Drive") AND mediatype:software'
+      },
+      {
+        label: "N64",
+        core: "n64",
+        query: '(subject:"Nintendo 64" OR subject:"N64") AND mediatype:software'
+      },
+      {
+        label: "PS1",
+        core: "psx",
+        query: '(subject:"PlayStation" OR subject:"PSX") AND (subject:"homebrew" OR subject:"demo") AND mediatype:software'
+      }
+    ];
+
+    const GENRES = ["All", "Action", "Arcade", "Adventure", "Platformer", "Puzzle", "Shooter", "Sports", "RPG"];
+
+    const FEATURED_GAMES = [
+      {
+        id: "2048_nes",
+        title: "2048 (NES Homebrew)",
+        console: "nes",
+        label: "NES",
+        genre: "Puzzle",
+        cover: "https://archive.org/services/img/2048_nes",
+        romUrl: "https://archive.org/download/2048_nes/2048.nes"
+      },
+      {
+        id: "blade-buster-nes",
+        title: "Blade Buster",
+        console: "nes",
+        label: "NES",
+        genre: "Shooter",
+        cover: "https://archive.org/services/img/blade-buster-nes",
+        romUrl: "https://archive.org/download/blade-buster-nes/Blade%20Buster%20%28World%29%20%28Aftermarket%29%20%28Unl%29.nes"
+      },
+      {
+        id: "alter-ego-nes",
+        title: "Alter Ego",
+        console: "nes",
+        label: "NES",
+        genre: "Platformer",
+        cover: "https://archive.org/services/img/alter-ego-nes",
+        romUrl: "https://archive.org/download/alter-ego-nes/Alter%20Ego%20%28World%29%20%28Aftermarket%29%28Unl%29.nes"
+      },
+      {
+        id: "classic-kong-complete",
+        title: "Classic Kong Complete",
+        console: "snes",
+        label: "SNES",
+        genre: "Arcade",
+        cover: "https://archive.org/services/img/classic-kong-complete",
+        romUrl: "https://archive.org/download/classic-kong-complete/Classic%20Kong%20Complete%20%28World%29%20%28Aftermarket%29%20%28Unl%29.sfc"
+      },
+      {
+        id: "super-boss-gaiden",
+        title: "Super Boss Gaiden",
+        console: "snes",
+        label: "SNES",
+        genre: "Action",
+        cover: "https://archive.org/services/img/super-boss-gaiden",
+        romUrl: "https://archive.org/download/super-boss-gaiden/Super%20Boss%20Gaiden%20%28World%29%20%28Aftermarket%29%20%28Unl%29.sfc"
+      },
+      {
+        id: "tobu-tobu-girl",
+        title: "Tobu Tobu Girl",
+        console: "gb",
+        label: "Game Boy",
+        genre: "Platformer",
+        cover: "https://archive.org/services/img/tobu-tobu-girl",
+        romUrl: "https://archive.org/download/tobu-tobu-girl/Tobu%20Tobu%20Girl%20%28World%29%20%28Aftermarket%29%20%28Unl%29.gb"
+      },
+      {
+        id: "anguna-gba",
+        title: "Anguna: Warriors of Virtue",
+        console: "gba",
+        label: "GBA",
+        genre: "Adventure",
+        cover: "https://archive.org/services/img/anguna-gba",
+        romUrl: "https://archive.org/download/anguna-gba/Anguna%20-%20Warriors%20of%20Virtue%20%28World%29%20%28Aftermarket%29%20%28Unl%29.gba"
+      },
+      {
+        id: "tanzer-md",
+        title: "Tänzer",
+        console: "segaMD",
+        label: "Genesis",
+        genre: "Action",
+        cover: "https://archive.org/services/img/tanzer-md",
+        romUrl: "https://archive.org/download/tanzer-md/Tanzer%20%28World%29%20%28Demo%29%20%28Aftermarket%29%20%28Unl%29.bin"
+      }
+    ];
+
+    const FAV_KEY = 'archive_arcade_fav_objects_v2';
+    let savedFavoritesMap = JSON.parse(localStorage.getItem(FAV_KEY) || '{}');
+
+    let catalog = [];
+    let currentPage = 1;
+    let totalFound = 0;
+    let isLoading = false;
+    let onlyFavorites = false;
+    let selectedConsole = 'All';
+    let selectedGenre = 'All';
+    let searchQuery = '';
+    let searchDebounceTimer = null;
+    let pendingLocalFile = null;
+    let pendingBiosFile = null;
+    let activeBlobUrls = [];
+
+    const consoleFiltersEl = document.getElementById('console-filters');
+    const genreFiltersEl = document.getElementById('genre-filters');
+    const searchInput = document.getElementById('search-input');
+    const clearSearchBtn = document.getElementById('clear-search');
+    const grid = document.getElementById('game-grid');
+    const spinner = document.getElementById('loading-spinner');
+    const loadMoreWrap = document.getElementById('load-more-wrap');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    const emptyState = document.getElementById('empty-state');
+    const emptyTitle = document.getElementById('empty-title');
+    const emptyDesc = document.getElementById('empty-desc');
+    const libraryHeading = document.getElementById('library-heading');
+    const resultCount = document.getElementById('result-count');
+    const favCountEl = document.getElementById('fav-count');
+    const romFileInput = document.getElementById('rom-file-input');
+    const biosFileInput = document.getElementById('bios-file-input');
+    const archiveFallbackLink = document.getElementById('archive-fallback-link');
+
+    function updateFavBadge() {
+      favCountEl.textContent = Object.keys(savedFavoritesMap).length;
+    }
+
+    function toggleFavorite(e, game) {
+      e.stopPropagation();
+      if (savedFavoritesMap[game.id]) {
+        delete savedFavoritesMap[game.id];
+      } else {
+        savedFavoritesMap[game.id] = game;
+      }
+      localStorage.setItem(FAV_KEY, JSON.stringify(savedFavoritesMap));
+      updateFavBadge();
+      renderCards();
+    }
+
+    function setFavMode(isFav) {
+      onlyFavorites = isFav;
+      document.getElementById('pill-all').classList.toggle('active', !isFav);
+      document.getElementById('pill-favs').classList.toggle('active', isFav);
+      if (isFav) {
+        loadMoreWrap.style.display = 'none';
+        renderCards();
+      } else {
+        fetchArchiveCatalog(true);
+      }
+    }
+
+    function createFallbackCover(title, label) {
+      const safeTitle = String(title).replace(/[<>&'"]/g, '').slice(0, 26);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">
+        <rect width="300" height="400" fill="#18141c"/>
+        <rect x="16" y="16" width="268" height="368" rx="12" fill="none" stroke="#e4007c" stroke-width="3"/>
+        <text x="150" y="175" fill="#e4007c" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle">${label}</text>
+        <text x="150" y="210" fill="#f8f5f9" font-family="sans-serif" font-size="16" font-weight="bold" text-anchor="middle">${safeTitle}</text>
+      </svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    function renderConsolePills() {
+      consoleFiltersEl.innerHTML = '';
+      CONSOLES.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = `filter-pill ${selectedConsole === c.label ? 'active' : ''}`;
+        btn.textContent = c.label;
+        btn.onclick = () => {
+          selectedConsole = c.label;
+          onlyFavorites = false;
+          document.getElementById('pill-all').classList.add('active');
+          document.getElementById('pill-favs').classList.remove('active');
+          renderConsolePills();
+          fetchArchiveCatalog(true);
+        };
+        consoleFiltersEl.appendChild(btn);
+      });
+    }
+
+    function renderGenrePills() {
+      genreFiltersEl.innerHTML = '';
+      GENRES.forEach(genreName => {
+        const btn = document.createElement('button');
+        btn.className = `filter-pill genre-pill ${selectedGenre === genreName ? 'active' : ''}`;
+        btn.textContent = genreName;
+        btn.onclick = () => {
+          selectedGenre = genreName;
+          renderGenrePills();
+          if (onlyFavorites) {
+            renderCards();
+          } else {
+            fetchArchiveCatalog(true);
+          }
+        };
+        genreFiltersEl.appendChild(btn);
+      });
+    }
+
+    function normalizeArray(val) {
+      if (!val) return [];
+      return Array.isArray(val) ? val : [val];
+    }
+
+    function inferConsoleFromDoc(doc, forcedConsoleObj) {
+      if (forcedConsoleObj && forcedConsoleObj.core) {
+        return { label: forcedConsoleObj.label, core: forcedConsoleObj.core };
+      }
+      const subjects = normalizeArray(doc.subject).join(' ');
+      const collections = normalizeArray(doc.collection).join(' ');
+      const blob = `${doc.title || ''} ${subjects} ${collections}`.toLowerCase();
+      if (blob.includes('internetarcade') || blob.includes('mame') || blob.includes('arcade')) return { label: 'Arcade', core: 'mame2003_plus' };
+      if (blob.includes('snes') || blob.includes('super nintendo')) return { label: 'SNES', core: 'snes' };
+      if (blob.includes('game boy advance') || blob.includes('gba')) return { label: 'GBA', core: 'gba' };
+      if (blob.includes('game boy') || blob.includes('gameboy')) return { label: 'Game Boy', core: 'gb' };
+      if (blob.includes('genesis') || blob.includes('mega drive')) return { label: 'Genesis', core: 'segaMD' };
+      if (blob.includes('nintendo 64') || blob.includes('n64')) return { label: 'N64', core: 'n64' };
+      if (blob.includes('playstation') || blob.includes('psx')) return { label: 'PS1', core: 'psx' };
+      return { label: 'NES', core: 'nes' };
+    }
+
+    function inferGenreFromDoc(doc) {
+      if (selectedGenre !== 'All') return selectedGenre;
+      const subjects = normalizeArray(doc.subject).join(' ');
+      const text = `${doc.title || ''} ${subjects}`.toLowerCase();
+      for (const g of GENRES.slice(1)) {
+        if (text.includes(g.toLowerCase())) return g;
+      }
+      return 'Arcade';
+    }
+
+    async function fetchArchiveCatalog(reset = true) {
+      if (isLoading) return;
+      isLoading = true;
+
+      if (reset) {
+        currentPage = 1;
+        catalog = [];
+        grid.innerHTML = '';
+        emptyState.style.display = 'none';
+        loadMoreWrap.style.display = 'none';
+        spinner.style.display = 'block';
+      } else {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.textContent = 'Loading...';
+      }
+
+      const consoleObj = CONSOLES.find(c => c.label === selectedConsole) || CONSOLES[0];
+      let queryParts = [consoleObj.query];
+
+      if (selectedGenre !== 'All') {
+        queryParts.push(`(subject:"${selectedGenre}" OR title:"${selectedGenre}" OR description:"${selectedGenre}")`);
+      }
+
+      if (searchQuery.trim()) {
+        const cleanQ = searchQuery.trim().replace(/["()]/g, '');
+        queryParts.push(`(title:(${cleanQ}) OR subject:(${cleanQ}))`);
+      }
+
+      const fullQuery = queryParts.join(' AND ');
+      const apiUrl = `https://archive.org/advancedsearch.php?q=${encodeURIComponent(fullQuery)}&fl[]=identifier,title,subject,collection&sort[]=downloads+desc&rows=24&page=${currentPage}&output=json`;
+
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        const docs = data?.response?.docs || [];
+        totalFound = data?.response?.numFound || 0;
+
+        const mapped = docs.map(doc => {
+          const sys = inferConsoleFromDoc(doc, consoleObj);
+          const cleanTitle = Array.isArray(doc.title) ? doc.title[0] : (doc.title || doc.identifier);
+          return {
+            id: doc.identifier,
+            title: cleanTitle,
+            console: sys.core,
+            label: sys.label,
+            genre: inferGenreFromDoc(doc),
+            cover: `https://archive.org/services/img/${doc.identifier}`,
+            romUrl: null
+          };
+        });
+
+        if (reset && currentPage === 1 && !searchQuery.trim()) {
+          const matchingFeatured = FEATURED_GAMES.filter(fg => {
+            const cMatch = selectedConsole === 'All' || fg.label === selectedConsole;
+            const gMatch = selectedGenre === 'All' || fg.genre === selectedGenre;
+            return cMatch && gMatch;
+          });
+          const seenIds = new Set(matchingFeatured.map(f => f.id));
+          catalog = [...matchingFeatured, ...mapped.filter(m => !seenIds.has(m.id))];
+        } else {
+          const existingIds = new Set(catalog.map(c => c.id));
+          catalog = [...catalog, ...mapped.filter(m => !existingIds.has(m.id))];
+        }
+
+        renderCards();
+
+        if (catalog.length < totalFound && docs.length > 0) {
+          loadMoreWrap.style.display = 'flex';
+        } else {
+          loadMoreWrap.style.display = 'none';
+        }
+      } catch (err) {
+        if (reset) {
+          catalog = [...FEATURED_GAMES];
+          totalFound = catalog.length;
+          renderCards();
+        }
+      } finally {
+        isLoading = false;
+        spinner.style.display = 'none';
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = 'Load More Cartridges';
+      }
+    }
+
+    function loadMoreGames() {
+      currentPage += 1;
+      fetchArchiveCatalog(false);
+    }
+
+    function renderCards() {
+      const query = searchQuery.trim().toLowerCase();
+      let listToRender = onlyFavorites ? Object.values(savedFavoritesMap) : catalog;
+
+      if (onlyFavorites) {
+        listToRender = listToRender.filter(g => {
+          const cMatch = selectedConsole === 'All' || g.label === selectedConsole;
+          const gMatch = selectedGenre === 'All' || g.genre === selectedGenre;
+          const sMatch = !query || g.title.toLowerCase().includes(query) || g.label.toLowerCase().includes(query);
+          return cMatch && gMatch && sMatch;
+        });
+      }
+
+      const headingParts = [];
+      if (onlyFavorites) headingParts.push('Favorites');
+      if (selectedConsole !== 'All') headingParts.push(selectedConsole);
+      if (selectedGenre !== 'All') headingParts.push(selectedGenre);
+      libraryHeading.textContent = headingParts.length ? headingParts.join(' • ') : 'All Games';
+
+      if (onlyFavorites) {
+        resultCount.textContent = `${listToRender.length} saved`;
+      } else {
+        resultCount.textContent = `Showing ${listToRender.length} of ${totalFound.toLocaleString()} games`;
+      }
+
+      grid.innerHTML = '';
+
+      if (listToRender.length === 0) {
+        grid.style.display = 'none';
+        loadMoreWrap.style.display = 'none';
+        emptyState.style.display = 'block';
+        if (onlyFavorites && Object.keys(savedFavoritesMap).length === 0) {
+          emptyTitle.textContent = 'No favorite games yet';
+          emptyDesc.textContent = 'Tap the heart icon on any game cartridge to save it here.';
+        } else {
+          emptyTitle.textContent = 'No matching cartridges found';
+          emptyDesc.textContent = 'Try clearing your search or switching console and genre filters.';
+        }
+        return;
+      }
+
+      grid.style.display = 'grid';
+      emptyState.style.display = 'none';
+
+      listToRender.forEach(game => {
+        const isFav = Boolean(savedFavoritesMap[game.id]);
+        const card = document.createElement('div');
+        card.className = 'game-card';
+
+        const coverWrapper = document.createElement('div');
+        coverWrapper.className = 'cover-wrapper';
+
+        const favBtn = document.createElement('button');
+        favBtn.className = `fav-btn ${isFav ? 'is-fav' : ''}`;
+        favBtn.innerHTML = isFav ? '♥' : '♡';
+        favBtn.setAttribute('aria-label', isFav ? 'Remove from favorites' : 'Add to favorites');
+        favBtn.onclick = (e) => toggleFavorite(e, game);
+
+        const img = document.createElement('img');
+        img.className = 'game-cover';
+        img.src = game.cover;
+        img.alt = game.title;
+        img.loading = 'lazy';
+        img.onerror = () => {
+          img.onerror = null;
+          img.src = createFallbackCover(game.title, game.label);
+        };
+
+        const badge = document.createElement('div');
+        badge.className = 'play-badge';
+        badge.textContent = '▶ PLAY';
+
+        coverWrapper.appendChild(favBtn);
+        coverWrapper.appendChild(img);
+        coverWrapper.appendChild(badge);
+
+        const info = document.createElement('div');
+        info.className = 'game-info';
+        info.innerHTML = `
+          <div class="meta-tags">
+            <span class="game-console">${game.label}</span>
+            <span class="game-genre">${game.genre}</span>
+          </div>
+          <div class="game-title">${game.title}</div>
+        `;
+
+        card.appendChild(coverWrapper);
+        card.appendChild(info);
+        card.onclick = () => prepareAndLaunchArchiveGame(game);
+        grid.appendChild(card);
+      });
+    }
+
+    function resetFilters() {
+      onlyFavorites = false;
+      selectedConsole = 'All';
+      selectedGenre = 'All';
+      searchQuery = '';
+      searchInput.value = '';
+      clearSearchBtn.style.display = 'none';
+      document.getElementById('pill-all').classList.add('active');
+      document.getElementById('pill-favs').classList.remove('active');
+      renderConsolePills();
+      renderGenrePills();
+      fetchArchiveCatalog(true);
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      clearSearchBtn.style.display = searchQuery ? 'block' : 'none';
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        if (onlyFavorites) {
+          renderCards();
+        } else {
+          fetchArchiveCatalog(true);
+        }
+      }, 450);
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+      searchQuery = '';
+      searchInput.value = '';
+      clearSearchBtn.style.display = 'none';
+      searchInput.focus();
+      if (onlyFavorites) {
+        renderCards();
+      } else {
+        fetchArchiveCatalog(true);
+      }
+    });
+
+    // Fetch ROM via CORS-safe fallbacks into a local Blob URL so EmulatorJS never hits a Network Error
+    async function fetchRomAsBlobUrl(directUrl, onProgressText) {
+      const candidates = [
+        directUrl,
+        `https://corsproxy.io/?${encodeURIComponent(directUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`
+      ];
+
+      for (let i = 0; i < candidates.length; i++) {
+        try {
+          if (i > 0 && onProgressText) {
+            onProgressText('Bypassing Archive CORS redirect (trying mirror ' + i + ')...');
+          }
+          const response = await fetch(candidates[i]);
+          if (!response.ok) continue;
+
+          const contentType = (response.headers.get('content-type') || '').toLowerCase();
+          if (contentType.includes('text/html')) continue;
+
+          const blob = await response.blob();
+          if (blob.size < 128) continue;
+
+          const blobUrl = URL.createObjectURL(blob);
+          activeBlobUrls.push(blobUrl);
+          return blobUrl;
+        } catch (err) {
+          // Try next proxy candidate
+        }
+      }
+      return null;
+    }
+
+    async function prepareAndLaunchArchiveGame(game) {
+      document.getElementById('player-overlay').style.display = 'flex';
+      document.getElementById('now-playing').innerText = `${game.title} • ${game.label}`;
+
+      if (game.id) {
+        archiveFallbackLink.href = `https://archive.org/details/${encodeURIComponent(game.id)}`;
+        archiveFallbackLink.style.display = 'inline-block';
+      } else {
+        archiveFallbackLink.style.display = 'none';
+      }
+
+      const container = document.getElementById('emulator-container');
+      const updateStatus = (msg) => {
+        container.innerHTML = `<div class="boot-status"><div class="spinner"></div><p>${msg}</p></div>`;
+      };
+
+      updateStatus('Locating cartridge file on Internet Archive...');
+
+      try {
+        let directUrl = game.romUrl;
+
+        if (!directUrl) {
+          const metaRes = await fetch(`https://archive.org/metadata/${encodeURIComponent(game.id)}/files`);
+          const metaData = await metaRes.json();
+          const files = metaData?.result || [];
+
+          const validExts = ['.nes', '.sfc', '.smc', '.gb', '.gbc', '.gba', '.md', '.bin', '.gen', '.n64', '.z64', '.v64', '.pbp', '.chd', '.iso', '.zip'];
+          const romFile = files.find(f => {
+            const lower = (f.name || '').toLowerCase();
+            return validExts.some(ext => lower.endsWith(ext)) && !lower.includes('bios');
+          });
+
+          if (!romFile) {
+            container.innerHTML = `
+              <div class="boot-status">
+                <h3>No Direct ROM File Found</h3>
+                <p>This Archive entry uses an internal container format that cannot be extracted automatically.</p>
+                <div class="boot-actions">
+                  <a class="close-btn" style="text-decoration:none;" href="https://archive.org/details/${encodeURIComponent(game.id)}" target="_blank" rel="noopener">Play on Archive.org ↗</a>
+                </div>
+              </div>`;
+            return;
+          }
+
+          directUrl = `https://archive.org/download/${encodeURIComponent(game.id)}/${encodeURIComponent(romFile.name)}`;
+          game.romUrl = directUrl;
+        }
+
+        updateStatus('Downloading cartridge into browser memory...');
+        const blobUrl = await fetchRomAsBlobUrl(directUrl, updateStatus);
+
+        if (!blobUrl) {
+          container.innerHTML = `
+            <div class="boot-status">
+              <h3>Archive Download Server Blocked Request</h3>
+              <p>Internet Archive's storage node blocked cross-origin streaming for this cartridge. You can play it directly on Archive.org or download the ROM and use <b>📂 Load ROM</b>.</p>
+              <div class="boot-actions">
+                <a class="close-btn" style="text-decoration:none;" href="https://archive.org/details/${encodeURIComponent(game.id)}" target="_blank" rel="noopener">Play on Archive.org ↗</a>
+              </div>
+            </div>`;
+          return;
+        }
+
+        bootEmulator(game.title, game.label, game.console, blobUrl, null);
+      } catch (err) {
+        container.innerHTML = `
+          <div class="boot-status">
+            <h3>Connection Error</h3>
+            <p>Could not reach Internet Archive right now. Try again or boot a local ROM file.</p>
+          </div>`;
+      }
+    }
+
+    function detectCoreFromExtension(filename) {
+      const ext = filename.split('.').pop().toLowerCase();
+      const map = {
+        nes: 'nes',
+        sfc: 'snes',
+        smc: 'snes',
+        gb: 'gb',
+        gbc: 'gb',
+        gba: 'gba',
+        md: 'segaMD',
+        bin: 'psx',
+        gen: 'segaMD',
+        sms: 'segaMS',
+        gg: 'segaGG',
+        n64: 'n64',
+        z64: 'n64',
+        v64: 'n64',
+        nds: 'nds',
+        iso: 'psx',
+        cue: 'psx',
+        chd: 'psx',
+        pbp: 'psx'
+      };
+      return map[ext] || 'nes';
+    }
+
+    romFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      pendingLocalFile = file;
+      pendingBiosFile = null;
+      document.getElementById('bios-file-label').textContent = 'No BIOS selected';
+      document.getElementById('selected-file-name').textContent = file.name;
+      document.getElementById('core-selector').value = detectCoreFromExtension(file.name);
+      document.getElementById('local-rom-modal').style.display = 'flex';
+    });
+
+    biosFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      pendingBiosFile = file;
+      document.getElementById('bios-file-label').textContent = file.name;
+    });
+
+    function closeLocalModal() {
+      document.getElementById('local-rom-modal').style.display = 'none';
+      romFileInput.value = '';
+      biosFileInput.value = '';
+      pendingLocalFile = null;
+      pendingBiosFile = null;
+    }
+
+    function confirmLocalRomLaunch() {
+      if (!pendingLocalFile) return;
+
+      const coreSelect = document.getElementById('core-selector');
+      const core = coreSelect.value;
+      const label = coreSelect.options[coreSelect.selectedIndex].text.split(' ')[0];
+      const romBlobUrl = URL.createObjectURL(pendingLocalFile);
+      activeBlobUrls.push(romBlobUrl);
+
+      const biosBlobUrl = pendingBiosFile ? URL.createObjectURL(pendingBiosFile) : null;
+      if (biosBlobUrl) activeBlobUrls.push(biosBlobUrl);
+
+      const cleanTitle = pendingLocalFile.name.replace(/\.[^/.]+$/, '');
+
+      archiveFallbackLink.style.display = 'none';
+      document.getElementById('local-rom-modal').style.display = 'none';
+      document.getElementById('player-overlay').style.display = 'flex';
+      document.getElementById('now-playing').innerText = `${cleanTitle} • ${label}`;
+
+      bootEmulator(cleanTitle, label, core, romBlobUrl, biosBlobUrl);
+    }
+
+    function bootEmulator(title, label, core, romUrl, biosUrl) {
+      const container = document.getElementById('emulator-container');
+      container.innerHTML = '<div id="game" style="width:100%;height:100%;"></div>';
+
+      window.EJS_player = '#game';
+      window.EJS_core = core;
+      window.EJS_gameUrl = romUrl;
+      if (biosUrl) {
+        window.EJS_biosUrl = biosUrl;
+      }
+      window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+      window.EJS_color = '#e4007c';
+      window.EJS_startOnLoaded = true;
+
+      const existingScript = document.getElementById('ejs-script');
+      if (existingScript) existingScript.remove();
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+      script.id = 'ejs-script';
+      document.body.appendChild(script);
+    }
+
+    function closeGame() {
+      activeBlobUrls.forEach(u => URL.revokeObjectURL(u));
+      location.reload();
+    }
+
+    // Initialize App
+    updateFavBadge();
+    renderConsolePills();
+    renderGenrePills();
+    fetchArchiveCatalog(true);
+  </script>
+</body>
+</html>
